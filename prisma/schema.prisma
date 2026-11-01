@@ -1,0 +1,67 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Room {
+  id                    String    @id
+  name                  String
+  capacity              Int
+  price_per_night_cents Int
+  status                String    @default("AVAILABLE")
+  bookings              Booking[]
+
+  @@map("rooms")
+}
+
+model Customer {
+  id         String    @id
+  name       String
+  email      String    @unique
+  created_at DateTime  @default(now())
+  bookings   Booking[]
+
+  @@index([created_at(sort: Desc)], map: "idx_customers_created_at")
+  @@map("customers")
+}
+
+model Booking {
+  id                String   @id
+  idempotency_key   String?  @unique
+  request_hash      String?
+  room_id           String
+  customer_id       String
+  check_in          DateTime @db.Date
+  check_out         DateTime @db.Date
+  guests            Int
+  currency          String   @default("USD")
+  total_price_cents Int
+  status            String   @default("CONFIRMED")
+  created_at        DateTime @default(now())
+
+  room     Room     @relation(fields: [room_id], references: [id], onDelete: Restrict)
+  customer Customer @relation(fields: [customer_id], references: [id], onDelete: Restrict)
+
+  @@index([room_id, status, check_in, check_out], map: "idx_bookings_overlap")
+  @@index([created_at(sort: Desc)], map: "idx_bookings_created_at")
+  @@map("bookings")
+}
+
+model WebhookOutbox {
+  id              String    @id
+  event_type      String
+  payload         String
+  delivery_status String    @default("PENDING")
+  retry_count     Int       @default(0)
+  next_retry_at   DateTime?
+  last_attempt_at DateTime?
+  last_error      String?
+  created_at      DateTime  @default(now())
+
+  @@index([delivery_status, next_retry_at, retry_count], map: "idx_outbox_pending")
+  @@index([created_at(sort: Desc)], map: "idx_webhook_outbox_created_at")
+  @@map("webhook_outbox")
+}
