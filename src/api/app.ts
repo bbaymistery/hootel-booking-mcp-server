@@ -118,11 +118,11 @@ export function createExpressApp(deps: AppDependencies = {}): Express {
   const clientDist = path.resolve(process.cwd(), 'client', 'dist');
   if (fs.existsSync(clientDist)) {
     app.use(express.static(clientDist));
-    app.get('*', (req, res, next) => {
-      if (req.path.startsWith('/api') || req.path.startsWith('/mcp')) {
-        return next();
+    app.use((req, res, next) => {
+      if (req.method === 'GET' && !req.path.startsWith('/api') && !req.path.startsWith('/mcp')) {
+        return res.sendFile(path.join(clientDist, 'index.html'));
       }
-      res.sendFile(path.join(clientDist, 'index.html'));
+      next();
     });
   }
 
