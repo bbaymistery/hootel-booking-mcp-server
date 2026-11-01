@@ -8,6 +8,8 @@ import type {
   ChatApiResponse
 } from '../types/api.ts';
 
+const API_BASE = (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/$/, '');
+
 export class ApiClientError extends Error {
   public readonly code: string;
   public readonly statusCode: number;
@@ -46,12 +48,12 @@ async function handleResponse<T>(res: Response): Promise<T> {
 }
 
 export async function fetchHealth(): Promise<{ status: string; database: string }> {
-  const res = await fetch('/api/health');
+  const res = await fetch(`${API_BASE}/api/health`);
   return handleResponse<{ status: string; database: string }>(res);
 }
 
 export async function fetchCatalogRooms(): Promise<Room[]> {
-  const res = await fetch('/api/rooms');
+  const res = await fetch(`${API_BASE}/api/rooms`);
   const data = await handleResponse<{ rooms: Room[] }>(res);
   return data.rooms;
 }
@@ -67,7 +69,7 @@ export async function checkAvailability(
     guests: String(guests)
   });
 
-  const res = await fetch(`/api/availability?${params.toString()}`);
+  const res = await fetch(`${API_BASE}/api/availability?${params.toString()}`);
   return handleResponse<AvailabilityResponse>(res);
 }
 
@@ -83,7 +85,7 @@ export async function createBooking(
     headers['Idempotency-Key'] = idempotencyKey;
   }
 
-  const res = await fetch('/api/bookings', {
+  const res = await fetch(`${API_BASE}/api/bookings`, {
     method: 'POST',
     headers,
     body: JSON.stringify({
@@ -100,7 +102,7 @@ export async function sendChatMessage(
   history?: ChatTurn[],
   model?: string
 ): Promise<ChatApiResponse> {
-  const res = await fetch('/api/chat', {
+  const res = await fetch(`${API_BASE}/api/chat`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
