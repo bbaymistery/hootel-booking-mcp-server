@@ -1,3 +1,5 @@
+import path from 'node:path';
+import fs from 'node:fs';
 import { randomUUID } from 'crypto';
 import express, { type Express } from 'express';
 import cors from 'cors';
@@ -111,6 +113,18 @@ export function createExpressApp(deps: AppDependencies = {}): Express {
       }
     }
   });
+
+  // Static client serving if built
+  const clientDist = path.resolve(process.cwd(), 'client', 'dist');
+  if (fs.existsSync(clientDist)) {
+    app.use(express.static(clientDist));
+    app.get('*', (req, res, next) => {
+      if (req.path.startsWith('/api') || req.path.startsWith('/mcp')) {
+        return next();
+      }
+      res.sendFile(path.join(clientDist, 'index.html'));
+    });
+  }
 
   // Central error handler
   app.use(apiErrorHandler);

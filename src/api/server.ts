@@ -25,8 +25,9 @@ export async function startHttpServer(port: number = Number(process.env['PORT'] 
 
   const app = createExpressApp({ prisma, webhookService });
 
-  app.listen(port, () => {
-    console.error(`[HTTP API Server] Hotel Booking API listening on http://localhost:${port}`);
+  const host = process.env['HOST'] ?? '0.0.0.0';
+  app.listen(port, host, () => {
+    console.error(`[HTTP API Server] Hotel Booking API listening on http://${host}:${port}`);
     console.error(`[HTTP API Server] Endpoints available:`);
     console.error(` - GET  /api/health`);
     console.error(` - GET  /api/rooms`);

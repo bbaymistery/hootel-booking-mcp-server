@@ -5,12 +5,15 @@
   "type": "module",
   "main": "dist/src/index.js",
   "scripts": {
-    "build": "tsc",
-    "start": "tsx src/index.ts",
-    "start:api": "tsx src/api/server.ts",
+    "postinstall": "prisma generate",
+    "build": "prisma generate && tsc",
+    "start": "node dist/src/api/server.js",
+    "start:mcp": "node dist/src/index.js",
+    "start:dev": "tsx src/api/server.ts",
+    "start:api": "node dist/src/api/server.js",
     "dev:client": "npm run dev --prefix client",
     "build:client": "npm run build --prefix client",
-    "build:all": "npm run build && npm run build:client",
+    "build:all": "prisma generate && tsc && npm run build:client",
     "db:migrate": "npx prisma migrate deploy",
     "db:seed": "tsx prisma/seed.ts",
     "test": "vitest run",
@@ -25,6 +28,7 @@
     "cors": "^2.8.6",
     "express": "^5.3.0",
     "pg": "^8.23.1",
+    "prisma": "^7.10.1",
     "zod": "^3.24.2"
   },
   "devDependencies": {
@@ -33,7 +37,6 @@
     "@types/express": "^5.0.6",
     "@types/node": "^22.13.10",
     "@types/pg": "^8.23.1",
-    "prisma": "^7.10.1",
     "tsx": "^4.19.3",
     "typescript": "^5.7.3",
     "vitest": "^3.0.7"
